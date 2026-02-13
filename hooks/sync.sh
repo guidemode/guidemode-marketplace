@@ -26,6 +26,32 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Trigger server-side session processing
+trigger_processing() {
+  local api_key="$1" server_url="$2" session_id="$3"
+
+  local process_response process_http_code
+  process_response=$(curl -sS -w "\n%{http_code}" \
+    -X POST \
+    -H "Authorization: Bearer $api_key" \
+    -H "Content-Type: application/json" \
+    -d '{}' \
+    "${server_url}/api/session-processing/process/${session_id}" \
+    2>/dev/null) || {
+    log "WARN: [SessionEnd] Processing trigger failed for session $session_id"
+    return 1
+  }
+
+  process_http_code=$(echo "$process_response" | tail -n1)
+  if [ "$process_http_code" = "200" ] || [ "$process_http_code" = "201" ]; then
+    log "INFO: [SessionEnd] Triggered processing for session $session_id"
+  else
+    local process_body
+    process_body=$(echo "$process_response" | sed '$d')
+    log "WARN: [SessionEnd] Processing trigger returned HTTP $process_http_code: $process_body"
+  fi
+}
+
 # Wrap everything so errors never propagate to the user
 main() {
   # Read stdin (Claude Code passes JSON with session_id, transcript_path, cwd, hook_event_name)
@@ -129,7 +155,13 @@ main() {
     " "$check_body" 2>/dev/null) || needs_upload="true"
 
     if [ "$needs_upload" = "false" ]; then
-      log "INFO: [$hook_event] Session $session_id unchanged (hash match) - skipping"
+      log "INFO: [$hook_event] Session $session_id unchanged (hash match) - skipping upload"
+
+      # On SessionEnd, still trigger processing even if upload was skipped (data already on server)
+      if [ "$hook_event" = "SessionEnd" ]; then
+        trigger_processing "$api_key" "$server_url" "$session_id" || true
+      fi
+
       return 0
     fi
   else
@@ -260,26 +292,7 @@ main() {
 
     # On SessionEnd, trigger server-side processing of the session
     if [ "$hook_event" = "SessionEnd" ]; then
-      local process_response process_http_code
-      process_response=$(curl -sS -w "\n%{http_code}" \
-        -X POST \
-        -H "Authorization: Bearer $api_key" \
-        -H "Content-Type: application/json" \
-        -d '{}' \
-        "${server_url}/api/session-processing/process/${session_id}" \
-        2>/dev/null) || {
-        log "WARN: [SessionEnd] Processing trigger failed for session $session_id"
-        return 0
-      }
-
-      process_http_code=$(echo "$process_response" | tail -n1)
-      if [ "$process_http_code" = "200" ] || [ "$process_http_code" = "201" ]; then
-        log "INFO: [SessionEnd] Triggered processing for session $session_id"
-      else
-        local process_body
-        process_body=$(echo "$process_response" | sed '$d')
-        log "WARN: [SessionEnd] Processing trigger returned HTTP $process_http_code: $process_body"
-      fi
+      trigger_processing "$api_key" "$server_url" "$session_id" || true
     fi
   else
     log "ERROR: [$hook_event] Upload failed with HTTP $upload_http_code: $upload_body"
