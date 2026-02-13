@@ -37,8 +37,8 @@ This plugin is the bridge. It runs silently in the background, syncing your sess
 
 ```
 ┌─────────────────┐     ┌──────────────┐     ┌──────────────────┐
-│   Claude Code    │────▶│  Plugin Hook  │────▶│  GuideMode API   │
-│   (you work)     │     │  (async, bg)  │     │  (store + analyze)│
+│   Claude Code   │────▶│  Plugin Hook │────▶│  GuideMode API   │
+│   (you work)    │     │  (async, bg) │     │(store + analyse) │
 └─────────────────┘     └──────────────┘     └──────────────────┘
         │                       │                       │
    You code normally     Hash check first        AI analysis,
