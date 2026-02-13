@@ -1,10 +1,10 @@
 <p align="center">
   <a href="https://guidemode.dev">
-    <img src="https://app.guidemode.dev/guidemode-logo.svg" alt="GuideMode" width="200" />
+    <img src="https://app.guidemode.dev/logo-colored.png" alt="GuideMode" width="50" />
   </a>
 </p>
 
-<h3 align="center">GuideMode Session Sync for Claude Code</h3>
+<h3 align="center">Guidemode Session Sync for Claude Code</h3>
 
 <p align="center">
   Every Claude Code session, captured and analyzed — automatically.
