@@ -257,6 +257,30 @@ main() {
 
   if [ "$upload_http_code" = "200" ] || [ "$upload_http_code" = "201" ]; then
     log "INFO: [$hook_event] Successfully uploaded session $session_id (HTTP $upload_http_code)"
+
+    # On SessionEnd, trigger server-side processing of the session
+    if [ "$hook_event" = "SessionEnd" ]; then
+      local process_response process_http_code
+      process_response=$(curl -sS -w "\n%{http_code}" \
+        -X POST \
+        -H "Authorization: Bearer $api_key" \
+        -H "Content-Type: application/json" \
+        -d '{}' \
+        "${server_url}/api/session-processing/process/${session_id}" \
+        2>/dev/null) || {
+        log "WARN: [SessionEnd] Processing trigger failed for session $session_id"
+        return 0
+      }
+
+      process_http_code=$(echo "$process_response" | tail -n1)
+      if [ "$process_http_code" = "200" ] || [ "$process_http_code" = "201" ]; then
+        log "INFO: [SessionEnd] Triggered processing for session $session_id"
+      else
+        local process_body
+        process_body=$(echo "$process_response" | sed '$d')
+        log "WARN: [SessionEnd] Processing trigger returned HTTP $process_http_code: $process_body"
+      fi
+    fi
   else
     log "ERROR: [$hook_event] Upload failed with HTTP $upload_http_code: $upload_body"
   fi
