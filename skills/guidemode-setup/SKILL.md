@@ -10,12 +10,18 @@ This skill helps configure GuideMode session sync for Claude Code.
 
 ## Steps
 
-1. **Check current status** by running:
+1. **Run health check** to see dependencies, config, connectivity, and recent activity:
    ```bash
    bash "${CLAUDE_PLUGIN_ROOT}/scripts/status.sh"
    ```
+   For detailed output (user info, hooks, last upload), add `-v`:
+   ```bash
+   bash "${CLAUDE_PLUGIN_ROOT}/scripts/status.sh" -v
+   ```
 
-2. **If not configured**, offer the user two options:
+2. **If the health check shows ALL OK**, tell the user everything is working and their sessions are syncing automatically.
+
+3. **If not configured** (config not found), offer the user two options:
 
    ### Option A: Browser Login (Recommended)
    Run the OAuth login flow:
@@ -44,9 +50,9 @@ This skill helps configure GuideMode session sync for Claude Code.
       ```
    4. Set file permissions: `chmod 600 ~/.guidemode/config.json`
 
-3. **If already configured**, tell the user their sessions are syncing automatically.
+4. **If issues are found** (dependency missing, auth failure, etc.), help the user resolve them based on the health check output.
 
-4. **To logout**, run:
+5. **To logout**, run:
    ```bash
    bash "${CLAUDE_PLUGIN_ROOT}/scripts/logout.sh"
    ```

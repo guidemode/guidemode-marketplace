@@ -200,10 +200,12 @@ main() {
   node -e "
     const fs = require('fs');
     const b64Content = fs.readFileSync(process.argv[1], 'utf8').replace(/\n/g, '');
+    const sessionId = process.argv[3];
     const payload = {
       provider: 'claude-code',
       repositoryName: process.argv[2],
-      sessionId: process.argv[3],
+      sessionId: sessionId,
+      fileName: sessionId + '.jsonl',
       fileHash: process.argv[4],
       content: b64Content,
       contentEncoding: 'gzip',
