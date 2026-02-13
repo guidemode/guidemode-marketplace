@@ -14,7 +14,7 @@
   <a href="https://guidemode.dev">Website</a> &middot;
   <a href="https://app.guidemode.dev">Dashboard</a> &middot;
   <a href="https://docs.guidemode.dev">Docs</a> &middot;
-  <a href="https://github.com/guidemode/guideai">GitHub</a>
+  <a href="https://github.com/guidemode/guidemode">GitHub</a>
 </p>
 
 ---
@@ -319,7 +319,7 @@ It checks:
 - [GuideMode](https://guidemode.dev) — Product website
 - [Dashboard](https://app.guidemode.dev) — View your synced sessions
 - [Documentation](https://docs.guidemode.dev) — Full platform docs
-- [GitHub](https://github.com/guidemode/guideai) — Source code and issues
+- [GitHub](https://github.com/guidemode/guidemode) — Source code and issues
 
 ## License
 
