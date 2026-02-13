@@ -1,0 +1,16 @@
+{
+  "name": "guidemode-marketplace",
+  "description": "GuideMode plugins for Claude Code",
+  "owner": {
+    "name": "GuideMode",
+    "email": "support@guidemode.dev"
+  },
+  "plugins": [
+    {
+      "name": "guidemode-sync",
+      "description": "Automatically sync Claude Code sessions to GuideMode. Uploads transcripts on session end via a lightweight hook - no desktop app required.",
+      "version": "0.1.3",
+      "source": "./"
+    }
+  ]
+}
