@@ -158,6 +158,19 @@ main() {
 
   if [ -n "$cwd" ] && [ -d "$cwd" ]; then
     git_remote_url=$(cd "$cwd" && git remote get-url origin 2>/dev/null) || git_remote_url=""
+    # Normalize SSH URLs to HTTPS (match desktop app behavior)
+    if [ -n "$git_remote_url" ]; then
+      git_remote_url=$(node -e "
+        const url = process.argv[1];
+        if (url.startsWith('git@github.com:')) {
+          console.log('https://github.com/' + url.slice('git@github.com:'.length));
+        } else if (url.startsWith('ssh://git@github.com/')) {
+          console.log('https://github.com/' + url.slice('ssh://git@github.com/'.length));
+        } else {
+          console.log(url);
+        }
+      " "$git_remote_url" 2>/dev/null) || true
+    fi
     git_branch=$(cd "$cwd" && git rev-parse --abbrev-ref HEAD 2>/dev/null) || git_branch=""
     latest_commit_hash=$(cd "$cwd" && git rev-parse HEAD 2>/dev/null) || latest_commit_hash=""
 
