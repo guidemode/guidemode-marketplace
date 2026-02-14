@@ -9,7 +9,7 @@
     {
       "name": "guidemode-sync",
       "description": "Automatically sync Claude Code sessions to GuideMode. Uploads transcripts on session end via a lightweight hook - no desktop app required.",
-      "version": "0.1.8",
+      "version": "0.2.0",
       "source": "./"
     }
   ]

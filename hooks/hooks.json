@@ -1,40 +1,7 @@
 {
   "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/sync.sh",
-            "async": true,
-            "timeout": 60
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/sync.sh",
-            "async": true,
-            "timeout": 60
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/sync.sh",
-            "async": true,
-            "timeout": 60
-          }
-        ]
-      }
-    ]
+    "Stop": [{ "hooks": [{ "type": "command", "command": "guidemode sync", "timeout": 60 }] }],
+    "PreCompact": [{ "hooks": [{ "type": "command", "command": "guidemode sync", "timeout": 60 }] }],
+    "SessionEnd": [{ "hooks": [{ "type": "command", "command": "guidemode sync", "timeout": 60 }] }]
   }
 }

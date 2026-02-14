@@ -10,26 +10,33 @@ Show recent activity from the GuideMode sync hook log.
 
 ## Steps
 
-1. **Show the last 30 lines** of the log file:
+1. **Show recent logs**:
    ```bash
-   tail -30 ~/.guidemode/logs/plugin-upload.log 2>/dev/null || echo "No log file found at ~/.guidemode/logs/plugin-upload.log"
+   guidemode logs
    ```
 
-2. **Summarize what you see** for the user:
-   - How many uploads succeeded vs failed
-   - How many were skipped (hash match / unchanged)
-   - Any errors or warnings
-   - When the last activity was
-
-3. **If the user asks for more**, show additional lines:
+2. **Show only errors and warnings**:
    ```bash
-   tail -100 ~/.guidemode/logs/plugin-upload.log
+   guidemode logs --errors
    ```
 
-4. **To show only errors and warnings**:
+3. **Show more lines**:
    ```bash
-   grep -E "(ERROR|WARN)" ~/.guidemode/logs/plugin-upload.log | tail -20
+   guidemode logs --lines 100
    ```
+
+4. **Follow the log in real-time**:
+   ```bash
+   guidemode logs --follow
+   ```
+
+## After viewing logs
+
+**Summarize what you see** for the user:
+- How many uploads succeeded vs failed
+- How many were skipped (hash match / unchanged)
+- Any errors or warnings
+- When the last activity was
 
 ## Log Format
 

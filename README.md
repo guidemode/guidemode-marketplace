@@ -63,71 +63,51 @@ Everything is **async and non-blocking**. The plugin never prints output, never 
 
 ## Quick Start
 
-### 1. Install the plugin
+The fastest way to get going:
+
+```bash
+npx guidemode
+```
+
+This walks you through:
+1. Browser-based authentication (GitHub OAuth)
+2. Installing Claude Code sync hooks
+3. Optionally installing the CLI globally
+4. Verifying everything works
+
+That's it. Start a Claude Code session and your sessions sync automatically. View them at [app.guidemode.dev](https://app.guidemode.dev).
+
+### Plugin Installation (Alternative)
+
+You can also install the plugin directly in Claude Code:
 
 ```bash
 /plugin marketplace add guidemode/guidemode-marketplace
 /plugin install guidemode-sync@guidemode-marketplace
 ```
 
-Restart Claude Code after installation.
-
-### 2. Authenticate
-
-Run the setup skill inside Claude Code:
-
-```
-/guidemode-setup
-```
-
-This opens your browser for GitHub OAuth. After login, you select your team and credentials are saved locally.
-
-### 3. That's it
-
-Start a Claude Code session. The plugin syncs automatically. View your sessions at [app.guidemode.dev](https://app.guidemode.dev).
-
-## Installation Options
-
-### From GitHub (Recommended)
-
-```bash
-/plugin marketplace add guidemode/guidemode-marketplace
-/plugin install guidemode-sync@guidemode-marketplace
-```
-
-### From a Local Path
-
-```bash
-/plugin marketplace add /path/to/guidemode-marketplace
-/plugin install guidemode-sync@guidemode-marketplace
-```
+Restart Claude Code after installation, then run `/guidemode-setup`.
 
 ## Authentication
 
 ### Browser Login (Recommended)
 
-The setup skill handles everything:
+From your terminal:
+
+```bash
+npx guidemode
+```
+
+Or from within Claude Code:
 
 ```
 /guidemode-setup
-```
-
-Or run the login script directly:
-
-```bash
-node /path/to/guidemode-marketplace/scripts/login.mjs
 ```
 
 This starts a local OAuth flow:
 1. Opens your browser to GuideMode's GitHub OAuth page
 2. After authentication, redirects back to a local server (port 8765-8770)
 3. Saves your API key and team info to `~/.guidemode/config.json` with `600` permissions
-
-**Self-hosted GuideMode:**
-
-```bash
-node /path/to/guidemode-marketplace/scripts/login.mjs --server=https://your-server.example.com
-```
 
 ### Manual API Key (Headless / SSH / CI)
 
@@ -153,17 +133,14 @@ chmod 600 ~/.guidemode/config.json
 ### Check Status
 
 ```bash
-bash /path/to/guidemode-marketplace/scripts/status.sh      # quick check
-bash /path/to/guidemode-marketplace/scripts/status.sh -v    # verbose (user info, hooks, last upload)
+guidemode status --verbose
 ```
 
 ### Logout
 
 ```bash
-bash /path/to/guidemode-marketplace/scripts/logout.sh
+guidemode logout
 ```
-
-Removes `~/.guidemode/config.json`. Sessions stop syncing immediately.
 
 ## Configuration
 
@@ -228,12 +205,7 @@ guidemode-marketplace/
 │   ├── marketplace.json        # Marketplace manifest (owner, plugin list)
 │   └── plugin.json             # Plugin metadata (name, version, keywords)
 ├── hooks/
-│   ├── hooks.json              # Hook event registrations (Stop, PreCompact, SessionEnd)
-│   └── sync.sh                 # Core upload script (bash + curl + node)
-├── scripts/
-│   ├── login.mjs               # OAuth login flow (zero NPM dependencies)
-│   ├── logout.sh               # Remove stored credentials
-│   └── status.sh               # Health check & connectivity verification
+│   └── hooks.json              # Hook event registrations (Stop, PreCompact, SessionEnd)
 └── skills/
     ├── guidemode-setup/
     │   └── SKILL.md            # /guidemode-setup slash command
@@ -243,13 +215,11 @@ guidemode-marketplace/
 
 ### Design Decisions
 
-**Zero NPM dependencies.** The Node.js scripts (`login.mjs`) use only built-in modules — `http`, `fs`, `crypto`, `child_process`, `os`, `path`, `url`. No `node_modules`, no install step, no supply chain risk.
+**CLI-powered sync.** The `guidemode` CLI handles session upload, authentication, and hook management. Install once with `npx guidemode` and everything just works.
 
-**Bash for the hot path.** The sync hook (`sync.sh`) is pure bash + curl + node (for JSON parsing only). It starts fast, runs fast, and has no startup overhead from module loading.
+**Async and fire-and-forget.** All hooks run with a 60-second timeout. The plugin never blocks Claude Code's response cycle.
 
-**Async and fire-and-forget.** All hooks run with `"async": true` and a 60-second timeout. The plugin never blocks Claude Code's response cycle.
-
-**Silent failure.** Every error path exits with code 0. Errors are logged to `~/.guidemode/logs/plugin-upload.log` but never printed to the user's terminal. A broken plugin should be invisible, not annoying.
+**Silent failure.** Every error path exits cleanly. Errors are logged to `~/.guidemode/logs/plugin-upload.log` but never printed to the user's terminal. A broken plugin should be invisible, not annoying.
 
 **Hash-based deduplication.** The server stores the last-seen hash for each session. Before uploading, the plugin asks "do you already have this version?" — if yes, it skips the upload entirely. This makes frequent hook events essentially free.
 
@@ -259,44 +229,23 @@ guidemode-marketplace/
 
 ### View Logs
 
-All activity is logged to `~/.guidemode/logs/plugin-upload.log`:
-
-```
-[2026-02-13T06:25:02Z] INFO: [Stop] Processing session abc-123 from /path/to/transcript.jsonl
-[2026-02-13T06:25:03Z] INFO: [Stop] Session abc-123 unchanged (hash match) - skipping
-[2026-02-13T06:27:19Z] INFO: [SessionEnd] Successfully uploaded session abc-123 (HTTP 200)
-[2026-02-13T06:27:20Z] INFO: [SessionEnd] Triggered processing for session abc-123
+```bash
+guidemode logs           # recent logs
+guidemode logs --errors  # only errors/warnings
+guidemode logs --follow  # real-time
 ```
 
-Or use the slash command:
-
-```
-/guidemode-logs
-```
+Or use the slash command: `/guidemode-logs`
 
 ### Common Issues
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| "No config file" in logs | Not authenticated | Run `/guidemode-setup` |
+| "No config file" in logs | Not authenticated | Run `npx guidemode` |
 | "Transcript file not found" | Session too short — file cleaned up before hook | Normal, no action needed |
 | "Hash check request failed" | Network issue | Automatic retry on next hook event |
-| "Upload failed with HTTP 401" | API key expired or revoked | Re-run `/guidemode-setup` |
-| Sessions not appearing in dashboard | Plugin not installed or hooks not registered | Run `status.sh -v` to diagnose |
-
-### Run the Health Check
-
-The status script verifies everything is working:
-
-```bash
-bash /path/to/guidemode-marketplace/scripts/status.sh -v
-```
-
-It checks:
-- All required tools are available (node, curl, gzip, base64, sha256, git)
-- Config file exists and is valid JSON
-- API key is accepted by the server
-- No recent errors in the log file
+| "Upload failed with HTTP 401" | API key expired or revoked | Run `guidemode login` |
+| Sessions not appearing in dashboard | Plugin not installed or hooks not registered | Run `guidemode status --verbose` |
 
 ## Security
 
@@ -311,7 +260,6 @@ It checks:
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
 - Node.js (already required by Claude Code)
-- Standard Unix tools: `curl`, `gzip`, `base64`, `git` (present on macOS and most Linux distributions)
 - A [GuideMode](https://app.guidemode.dev) account
 
 ## Links
