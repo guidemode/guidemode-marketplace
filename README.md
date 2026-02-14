@@ -200,10 +200,10 @@ Session transcripts naturally contain sensitive data — API keys, tokens, email
 
 | Category | Examples |
 |----------|----------|
-| API keys & tokens | AWS, GitHub (`ghp_`), Anthropic (`sk-ant-`), OpenAI, Slack, npm, Stripe, GCP, Linear, Shopify, 1Password |
+| API keys & tokens | AWS, GitHub (`ghp_`), Anthropic (`sk-ant-`), OpenAI, Slack, npm, GCP, Linear, Shopify, 1Password, GuideMode (`gai_`), generic `api_key=...` |
 | Private keys | RSA, DSA, EC, PGP private key blocks |
 | Connection strings | PostgreSQL, MongoDB, Redis URIs with credentials |
-| PII | Email addresses, phone numbers |
+| PII | Email addresses |
 | Local paths | Home directories (`/Users/...`, `/home/...`) |
 
 Detected values are replaced with `[REDACTED:CATEGORY]` placeholders. Structural metadata (session IDs, timestamps, roles, models, tool names) is preserved unchanged.
@@ -269,7 +269,7 @@ Or use the slash command: `/guidemode-logs`
 
 ## Security
 
-- **Automatic redaction** — Secrets (API keys, tokens, private keys, connection strings) and PII (emails, phone numbers) are detected and replaced with `[REDACTED:...]` placeholders before upload. Powered by [secretlint](https://github.com/secretlint/secretlint) (15 provider rules) and [OpenRedaction](https://github.com/sam247/openredaction) (570+ patterns). Enabled by default.
+- **Automatic redaction** — Secrets (API keys, tokens, private keys, connection strings) and PII (emails) are detected and replaced with `[REDACTED:...]` placeholders before upload. Powered by [secretlint](https://github.com/secretlint/secretlint) (15 provider rules) plus custom regex patterns. Enabled by default.
 - **Credentials stored locally** — API keys live in `~/.guidemode/config.json` with `600` permissions (owner-only read/write)
 - **No credentials in logs** — API keys are never written to the log file
 - **OAuth via localhost** — The login flow uses a localhost callback on ports 8765-8770 with a 5-minute timeout
