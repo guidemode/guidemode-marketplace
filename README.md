@@ -52,6 +52,9 @@ The plugin registers event hooks that fire at natural checkpoints during your Cl
 | **Stop** | After each Claude response | Near-real-time sync as you work |
 | **PreCompact** | Before context compaction | Captures the session before the window shrinks |
 | **SessionEnd** | Session terminates | Final upload — nothing is lost |
+| **TaskCompleted** | A task is marked complete | Sync at natural work boundaries |
+| **SubagentStop** | A subagent finishes | Capture parallel agent work |
+| **Notification** | Claude sends a notification | Sync after long-running operations |
 
 On each hook event:
 
@@ -159,11 +162,11 @@ Config lives at `~/.guidemode/config.json`:
 Control how often the plugin uploads by setting `syncHooks`:
 
 ```jsonc
-// Default: sync on every hook event (maximum freshness)
-{ "syncHooks": ["Stop", "PreCompact", "SessionEnd"] }
+// Default: sync on all hook events (maximum freshness)
+{ "syncHooks": ["Stop", "PreCompact", "SessionEnd", "TaskCompleted", "SubagentStop", "Notification"] }
 
 // Balanced: sync at checkpoints and session end
-{ "syncHooks": ["PreCompact", "SessionEnd"] }
+{ "syncHooks": ["PreCompact", "SessionEnd", "TaskCompleted"] }
 
 // Minimal: only sync when the session ends (least network usage)
 { "syncHooks": ["SessionEnd"] }
@@ -172,7 +175,7 @@ Control how often the plugin uploads by setting `syncHooks`:
 { "syncHooks": ["Stop", "SessionEnd"] }
 ```
 
-Omitting `syncHooks` enables all three hooks. The hash-based deduplication means even the most aggressive setting has minimal overhead — if the transcript hasn't changed, no data is transferred.
+Omitting `syncHooks` enables all hooks. The hash-based deduplication means even the most aggressive setting has minimal overhead — if the transcript hasn't changed, no data is transferred.
 
 ## What Gets Uploaded
 
@@ -205,7 +208,7 @@ guidemode-marketplace/
 │   ├── marketplace.json        # Marketplace manifest (owner, plugin list)
 │   └── plugin.json             # Plugin metadata (name, version, keywords)
 ├── hooks/
-│   └── hooks.json              # Hook event registrations (Stop, PreCompact, SessionEnd)
+│   └── hooks.json              # Hook event registrations (6 events)
 └── skills/
     ├── guidemode-setup/
     │   └── SKILL.md            # /guidemode-setup slash command

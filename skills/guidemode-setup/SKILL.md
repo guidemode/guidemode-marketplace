@@ -46,11 +46,14 @@ guidemode logout
 
 ## How It Works
 
-Once configured, session transcripts are automatically uploaded to GuideMode on three hooks:
+Once configured, session transcripts are automatically uploaded to GuideMode on these hooks:
 
 - **Stop** - after each Claude response
 - **PreCompact** - before context compaction
 - **SessionEnd** - when the session terminates
+- **TaskCompleted** - when a task is marked complete
+- **SubagentStop** - when a subagent finishes
+- **Notification** - when Claude sends a notification
 
 Uploads run in the background and never block your workflow. Sessions are deduplicated by file hash.
 
@@ -63,7 +66,7 @@ Add `syncHooks` to `~/.guidemode/config.json`:
 }
 ```
 
-Available hooks: `Stop`, `PreCompact`, `SessionEnd`. Omit to use all three (default).
+Available hooks: `Stop`, `PreCompact`, `SessionEnd`, `TaskCompleted`, `SubagentStop`, `Notification`. Omit to use all (default).
 
 ### Logs
 

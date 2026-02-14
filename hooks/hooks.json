@@ -2,6 +2,9 @@
   "hooks": {
     "Stop": [{ "hooks": [{ "type": "command", "command": "guidemode sync", "timeout": 60 }] }],
     "PreCompact": [{ "hooks": [{ "type": "command", "command": "guidemode sync", "timeout": 60 }] }],
-    "SessionEnd": [{ "hooks": [{ "type": "command", "command": "guidemode sync", "timeout": 60 }] }]
+    "SessionEnd": [{ "hooks": [{ "type": "command", "command": "guidemode sync", "timeout": 60 }] }],
+    "TaskCompleted": [{ "hooks": [{ "type": "command", "command": "guidemode sync", "timeout": 60 }] }],
+    "SubagentStop": [{ "hooks": [{ "type": "command", "command": "guidemode sync", "timeout": 60 }] }],
+    "Notification": [{ "hooks": [{ "type": "command", "command": "guidemode sync", "timeout": 60 }] }]
   }
 }
