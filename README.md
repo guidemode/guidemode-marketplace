@@ -156,6 +156,7 @@ Config lives at `~/.guidemode/config.json`:
 | `tenantId` | Yes | Your team/tenant ID |
 | `tenantName` | No | Display name for your team |
 | `syncHooks` | No | Which hook events trigger uploads (default: all) |
+| `redactBeforeUpload` | No | Redact secrets/PII before upload (default: `true`) |
 
 ### Tuning Sync Frequency
 
@@ -183,15 +184,31 @@ Each sync includes:
 
 | Data | Details |
 |------|---------|
-| **Session transcript** | Full JSONL conversation log, gzip-compressed |
+| **Session transcript** | Full JSONL conversation log, gzip-compressed, **redacted** |
 | **Git branch** | Current branch name |
 | **Git commit** | HEAD commit hash |
 | **Git remote** | Remote URL (SSH URLs normalized to HTTPS) |
 | **Project type** | Auto-detected: `nodejs`, `rust`, `go`, `python`, or `generic` |
 | **Session ID** | Claude Code's session identifier |
-| **File hash** | SHA256 for deduplication |
+| **File hash** | SHA256 for deduplication (computed after redaction) |
 
 Project type is detected from manifest files (`package.json` → nodejs, `Cargo.toml` → rust, `go.mod` → go, `requirements.txt`/`pyproject.toml` → python).
+
+### Automatic Secret & PII Redaction
+
+Session transcripts naturally contain sensitive data — API keys, tokens, emails, and home directory paths that appear in tool results, bash output, and file contents. **Before uploading, the CLI automatically scans and redacts this data.**
+
+| Category | Examples |
+|----------|----------|
+| API keys & tokens | AWS, GitHub (`ghp_`), Anthropic (`sk-ant-`), OpenAI, Slack, npm, Stripe, GCP, Linear, Shopify, 1Password |
+| Private keys | RSA, DSA, EC, PGP private key blocks |
+| Connection strings | PostgreSQL, MongoDB, Redis URIs with credentials |
+| PII | Email addresses, phone numbers |
+| Local paths | Home directories (`/Users/...`, `/home/...`) |
+
+Detected values are replaced with `[REDACTED:CATEGORY]` placeholders. Structural metadata (session IDs, timestamps, roles, models, tool names) is preserved unchanged.
+
+Redaction is **enabled by default**. To disable, set `"redactBeforeUpload": false` in `~/.guidemode/config.json`.
 
 ## Slash Commands
 
@@ -252,6 +269,7 @@ Or use the slash command: `/guidemode-logs`
 
 ## Security
 
+- **Automatic redaction** — Secrets (API keys, tokens, private keys, connection strings) and PII (emails, phone numbers) are detected and replaced with `[REDACTED:...]` placeholders before upload. Powered by [secretlint](https://github.com/secretlint/secretlint) (15 provider rules) and [OpenRedaction](https://github.com/sam247/openredaction) (570+ patterns). Enabled by default.
 - **Credentials stored locally** — API keys live in `~/.guidemode/config.json` with `600` permissions (owner-only read/write)
 - **No credentials in logs** — API keys are never written to the log file
 - **OAuth via localhost** — The login flow uses a localhost callback on ports 8765-8770 with a 5-minute timeout
